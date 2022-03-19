@@ -74,9 +74,9 @@ In Python:
 
   self.message_port_pub(pmt.intern("port name"), <pmt message>)
 
-Subscribing is usually done in the form of connecting message ports 
+Subscribing is usually done in the form of connecting message ports
 as part of the flowgraph, as discussed later. Internally, when message
-ports are connected, the gr::basic_block::message_port_sub method is 
+ports are connected, the gr::basic_block::message_port_sub method is
 called.
 
 Any block that has a subscription to another block's output message
@@ -94,7 +94,7 @@ must then bind this port to the message handler. For this, we use
 Boost's 'bind' function:
 
   set_msg_handler(pmt::pmt_t port_id,
-    boost::bind(&block_class::message_handler_function, this, _1));
+    boost::bind(&block_class::message_handler_function, this, boost::placeholders::_1));
 
 In Python:
 
@@ -107,7 +107,7 @@ port. The 'block_class::message_handler_function' is the member
 function of the class designated to handle messages to this port. The
 'this' and '_1' are standard ways of using the Boost bind function to
 pass the 'this' pointer as the first argument to the class (standard
-OOP practice) and the _1 is an indicator that the function expects 1
+OOP practice) and the boost::placeholders::_1 is an indicator that the function expects 1
 additional argument. The prototype for all message handling functions
 is:
 
@@ -124,7 +124,7 @@ We give examples of using this below.
 From the flowgraph level, we have instrumented a gr::hier_block2::msg_connect
 method to make it easy to subscribe blocks to other blocks'
 messages. Assume that the block \b src has an output message port named
-\a pdus and the block \b dbg has an input port named \a print. The message 
+\a pdus and the block \b dbg has an input port named \a print. The message
 connection in the flowgraph (in Python) looks like the following:
 
     self.tb.msg_connect(src, "pdus", dbg, "print")
@@ -227,7 +227,7 @@ gr::blocks::message_debug and gr::blocks::tagged_stream_to_pdu below
 to show setting up both input and output message passing capabilities.
 
 The gr::blocks::message_debug block is used for debugging the message
-passing system. It describes three input message ports: ''print'', 
+passing system. It describes three input message ports: ''print'',
 ''store'', and ''pdu_print''. The ''print'' port simply prints out all
 messages to standard out while the ''store'' port keeps a list of all
 messages posted to it. The ''pdu_print'' port specially formats PDU
@@ -241,21 +241,21 @@ The constructor of this block looks like this:
  {
    message_port_register_in(pmt::mp("print"));
    set_msg_handler(pmt::mp("print"),
-     boost::bind(&message_debug_impl::print, this, _1));
- 
+     boost::bind(&message_debug_impl::print, this, boost::placeholders::_1));
+
    message_port_register_in(pmt::mp("store"));
    set_msg_handler(pmt::mp("store"),
-     boost::bind(&message_debug_impl::store, this, _1));
- 
+     boost::bind(&message_debug_impl::store, this, boost::placeholders::_1));
+
    message_port_register_in(pmt::mp("print_pdu"));
    set_msg_handler(pmt::mp("print_pdu"),
-     boost::bind(&message_debug_impl::print_pdu, this, _1));
+     boost::bind(&message_debug_impl::print_pdu, this, boost::placeholders::_1));
  }
 </syntaxhighlight>
 
 The three message input ports are registered by their respective
-names. We then use the gr::basic_block::set_msg_handler function to 
-identify this particular port name with a callback function. The 
+names. We then use the gr::basic_block::set_msg_handler function to
+identify this particular port name with a callback function. The
 Boost ''bind'' function ([http://www.boost.org/doc/libs/1_52_0/libs/bind/bind.html Boost::bind])
 here binds the callback to a function of this block's class. So now
 the functions in the block's private implementation class,
@@ -310,11 +310,11 @@ shown below.
    if(pmt::length(d_pdu_vector) != d_pdu_length) {
      throw std::runtime_error("msg length not correct");
    }
- 
+
    pmt::pmt_t msg = pmt::cons(d_pdu_meta,
                               d_pdu_vector);
    message_port_pub(pdu_port_id, msg);
- 
+
    d_pdu_meta = pmt::PMT_NIL;
    d_pdu_vector = pmt::PMT_NIL;
    d_pdu_length = 0;
@@ -350,11 +350,11 @@ A Python Block example:
              name="msg_block",
              in_sig=None,
              out_sig=None)
- 
+
          self.message_port_register_out(pmt.intern('msg_out'))
          self.message_port_register_in(pmt.intern('msg_in'))
          self.set_msg_handler(pmt.intern('msg_in'), self.handle_msg)
- 
+
      def handle_msg(self, msg):
          self.message_port_pub(pmt.intern('msg_out'), pmt.intern('message received!'))
 </syntaxhighlight></text>

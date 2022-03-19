@@ -75,7 +75,7 @@ message_strobe_random_impl::message_strobe_random_impl(
 
     message_port_register_in(pmt::mp("set_msg"));
     set_msg_handler(pmt::mp("set_msg"),
-                    boost::bind(&message_strobe_random_impl::set_msg, this, _1));
+                    boost::bind(&message_strobe_random_impl::set_msg, this, boost::placeholders::_1));
 }
 
 long message_strobe_random_impl::next_delay()

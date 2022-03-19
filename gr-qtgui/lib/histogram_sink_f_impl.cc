@@ -82,7 +82,7 @@ histogram_sink_f_impl::histogram_sink_f_impl(int size,
     // setup PDU handling input port
     message_port_register_in(pmt::mp("in"));
     set_msg_handler(pmt::mp("in"),
-                    boost::bind(&histogram_sink_f_impl::handle_pdus, this, _1));
+                    boost::bind(&histogram_sink_f_impl::handle_pdus, this, boost::placeholders::_1));
 
     // +1 for the PDU buffer
     for (int i = 0; i < d_nconnections + 1; i++) {

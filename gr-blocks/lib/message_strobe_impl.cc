@@ -54,7 +54,7 @@ message_strobe_impl::message_strobe_impl(pmt::pmt_t msg, long period_ms)
 
     message_port_register_in(pmt::mp("set_msg"));
     set_msg_handler(pmt::mp("set_msg"),
-                    boost::bind(&message_strobe_impl::set_msg, this, _1));
+                    boost::bind(&message_strobe_impl::set_msg, this, boost::placeholders::_1));
 }
 
 message_strobe_impl::~message_strobe_impl() {}
